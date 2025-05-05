@@ -4,6 +4,7 @@ import com.jphilips.task.dto.TaskRequestDto;
 import com.jphilips.task.dto.TaskResponseDto;
 import com.jphilips.task.dto.mapper.TaskMapper;
 import com.jphilips.task.entity.Task;
+import com.jphilips.task.exception.custom.TaskNotFoundException;
 import com.jphilips.task.repository.TaskRepository;
 import com.jphilips.task.service.TaskService;
 import com.jphilips.task.util.TaskTestDataFactory;
@@ -15,9 +16,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class TaskServiceTest {
@@ -89,5 +90,35 @@ public class TaskServiceTest {
 
         assertNotNull(response);
         assertEquals(1L, response.id());
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenGettingNonExistentId(){
+        Long id = 1L;
+        when(taskRepository.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(TaskNotFoundException.class, () ->taskService.getTaskById(id));
+    }
+
+    @Test
+    public void shouldDeleteTask(){
+        Long id = 1L;
+        Task task = TaskTestDataFactory.createTask(id,"user1", "Task 1");
+
+        when(taskRepository.findById(id)).thenReturn(Optional.of(task));
+
+        taskService.deleteTaskById(id);
+
+        verify(taskRepository).delete(task);
+    }
+    @Test
+    public void shouldThrowExceptionWhenDeletingNonExistentTask() {
+        // Given
+        Long id = 1L;
+        when(taskRepository.findById(id)).thenReturn(Optional.empty());
+
+        // Then
+        assertThrows(TaskNotFoundException.class, () -> taskService.deleteTaskById(id));
+        verify(taskRepository, never()).delete(any());
     }
 }
