@@ -16,28 +16,29 @@ import java.util.List;
 public class TaskService {
 
     private final TaskRepository taskRepository;
+    private final TaskMapper taskMapper;
 
     public List<TaskResponseDto> getAllTask(){
         return taskRepository.findAll().stream()
-                .map(TaskMapper::toDto)
+                .map(taskMapper::toDto)
                 .toList();
     }
 
     public TaskResponseDto createTask(TaskRequestDto taskRequestDto) {
-        Task newTask = TaskMapper.toEntity(taskRequestDto);
+        Task newTask = taskMapper.toEntity(taskRequestDto);
 
         taskRepository.save(newTask);
 
-        return TaskMapper.toDto(newTask);
+        return taskMapper.toDto(newTask);
     }
 
     public TaskResponseDto getTaskById(Long id) {
-        return TaskMapper.toDto(findTaskById(id));
+        return taskMapper.toDto(findTaskById(id));
     }
 
     public List<TaskResponseDto> getTaskByUserId(String userId) {
         return taskRepository.findByUserId(userId).stream()
-                .map(TaskMapper::toDto)
+                .map(taskMapper::toDto)
                 .toList();
     }
 
@@ -51,7 +52,7 @@ public class TaskService {
 
         taskRepository.save(task);
 
-        return TaskMapper.toDto(task);
+        return taskMapper.toDto(task);
     }
 
     public void deleteTaskById(Long id){
